@@ -1,33 +1,31 @@
 import { openstreetmapGetPOIs } from 'https://tbo47.github.io/ez-opendata.js'
-  let coord = "14.67,-17.46,14.71,-17.41"
-  function getLongAndLat() {
-    return new Promise((resolve, reject) =>
-      navigator.geolocation.getCurrentPosition(resolve, reject)
-    );
-  }
-   async function getCurrentPOI() {
+  const getCurrentPOI = async () => {
     try {
       let position = await getLongAndLat();
       let latitude = position.coords.latitude;
       let longitude = position.coords.longitude;
-      coord = getBox(latitude, longitude);
-
+       const coord = getBox(latitude, longitude) //seems the format is not correct
+			showOSM(coord)
     } catch (e) {
       alert('Error: ' + e.message);
     }
   }
   getCurrentPOI.call();
-  
+  function getLongAndLat() {
+    return new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject)
+    );
+  }
   //calculate and parse the latitude and longitude int north south east west
   function getBox(lat, long) {
     //calculate the offset of 1km at a certain coordinate
     const dist = kmInDegree(lat, long)
     //calculate the bounds and make an object of them
     let bounds = {
-      north: lat + dist.lat,
-      south: lat - dist.lat,
-      east: long + dist.long,
-      west: long - dist.long
+      north: (lat + dist.lat).toFixed(2),
+      south: (lat - dist.lat).toFixed(2),
+      east: (long + dist.long).toFixed(2),
+      west: (long - dist.long).toFixed(2)
     };
     return `${bounds.north},${bounds.south},${bounds.east},${bounds.west}`;
   }
@@ -47,12 +45,13 @@ import { openstreetmapGetPOIs } from 'https://tbo47.github.io/ez-opendata.js'
 
     //If you want a greater offset, say 5km then change 1000 into 5000
     return {
-      lat: 1000 / latLength,
-      long: 1000 / longLength
+      lat: 5000 / latLength,
+      long: 5000 / longLength
     };
   }
 // https://wiki.openstreetmap.org/wiki/Key:amenity#Values
-
+async function showOSM(coord){
+ //coord = "14.67,-17.46,14.71,-17.41"
 const food = await openstreetmapGetPOIs(
   coord,
   [
@@ -68,8 +67,9 @@ const food = await openstreetmapGetPOIs(
 
 const myDiv = document.getElementById('my-div')
 
-console.log(food)
+//console.log(food)
 
 food.forEach(poi => {
   myDiv.innerHTML += `<a href="${poi.osm_url}" target="_blank">${poi.name}</a>`
 })
+}
